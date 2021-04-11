@@ -1,8 +1,37 @@
 import React, { Component } from 'react';
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from 'yup';
+import ErrorBanner from "./ErrorBanner";
 
 export class DrawForm extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      isError: false
+    };
+    this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleError = this.handleError.bind(this);
+  }
+
+  handleError(){
+    this.setState({isError: true})
+  }
+
+  handleSubmit(values, actions) {
+    fetch('/api/drawEntry', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(values)
+    }).then(response => {
+      actions.setSubmitting(false);
+      return response.json();
+    }).then(data => {
+      console.debug('response', data)
+    });
+  }
+
   render() {
     return (
       <div className="container">
@@ -13,26 +42,27 @@ export class DrawForm extends Component {
           </div>
         </div>
 
+        <ErrorBanner isError={this.state.isError} />
+
         <div className="row">
           <div className="col-lg-12">
             <Formik
-              initialValues={{ email: "", name: "", prize: "" }}
-              validationSchema={Yup.object({
-                name: Yup.string().required('Name is required'),
-                email: Yup.string().email('Invalid email address').required('Email is required'),
-              })}
-              onSubmit={(values, actions) => {
-                fetch('/api/enter-draw', {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json'
-                  },
-                  body: JSON.stringify(values)
-                }).then(function (response) {
-                  actions.setSubmitting(false);
-                  return response.json();
-                });
+              initialValues={{
+                email: "",
+                name: "",
+                prize: "any"
               }}
+              validationSchema={
+                Yup.object({
+                  name: Yup
+                    .string()
+                    .required('Name is required'),
+                  email: Yup
+                    .string()
+                    .email('Invalid email address')
+                    .required('Email is required'),
+                })}
+              onSubmit={this.handleSubmit}
             >
               {({ touched, errors, isSubmitting }) => (
                 <Form>
