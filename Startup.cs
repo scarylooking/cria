@@ -1,3 +1,4 @@
+using Cria.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -22,6 +23,10 @@ namespace Cria
         {
 
             services.AddControllersWithViews();
+
+            services.AddScoped<IDrawService, DrawService>();
+            services.AddScoped<ITicketService, TicketService>();
+            services.AddScoped<IStorageService, StorageService>();
 
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration =>

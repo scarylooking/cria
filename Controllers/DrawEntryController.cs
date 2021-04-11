@@ -7,6 +7,9 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Cria.Controllers.Models;
+using Cria.Models;
+using Cria.Services;
+using Microsoft.AspNetCore.Http;
 
 namespace Cria.Controllers
 {
@@ -15,16 +18,24 @@ namespace Cria.Controllers
     public class DrawEntryController : ControllerBase
     {
         private readonly ILogger<DrawEntryController> _logger;
+        private readonly ITicketService _ticketService;
 
-        public DrawEntryController(ILogger<DrawEntryController> logger)
+        public DrawEntryController(ILogger<DrawEntryController> logger, ITicketService ticketService)
         {
             _logger = logger;
+            _ticketService = ticketService;
         }
 
         [HttpPost]
-        public HttpResponseMessage CreateEntry([FromBody] DrawEntryRequest whatever)
+        public IActionResult CreateEntry([FromBody] DrawEntryRequest request)
         {
-            return new HttpResponseMessage(HttpStatusCode.Created);
+            var ticketId =_ticketService.CreateTicketForRequest(request);
+
+            var responseBody = new DrawEntryResponse(ticketId);
+
+            Response.StatusCode = StatusCodes.Status201Created;
+
+            return new JsonResult(responseBody);
         }
     }
 }
