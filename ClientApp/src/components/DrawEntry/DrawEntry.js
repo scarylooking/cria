@@ -1,24 +1,19 @@
 import React, { useState } from 'react';
 import DrawEntryForm from "./DrawEntryForm";
-import ErrorBanner from "../UI/ErrorBanner";
+import DrawEntrySuccess from "./DrawEntrySuccess";
+import DrawEntryFailure from "./DrawEntryFailure";
 
-const DrawEntry = () => {
+const DrawEntry2 = () => {
   const [isError, setIsError] = useState(false);
+  const [ticketId, setTicketId] = useState(null);
 
   return (
-    <div className="container">
-
-      <div className="row mb-5">
-        <div className="col-lg-12 text-center">
-          <h1 className="mt-5">Enter Draw</h1>
-        </div>
-      </div>
-
-      <ErrorBanner isVisible={true} />
-      <DrawEntryForm errorHandler={setIsError} />
-
-    </div>
+    <>
+      <DrawEntryFailure isVisible={isError}/>
+      {!ticketId && <DrawEntryForm errorHandler={setIsError} ticketHandler={setTicketId}  />}
+      {ticketId && <DrawEntrySuccess ticketId={ticketId} />}
+    </>
   );
 }
 
-export default DrawEntry;
+export default DrawEntry2;
