@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Cria.Controllers.Models;
 using Cria.Models;
 using Microsoft.Extensions.Logging;
 
@@ -19,9 +18,14 @@ namespace Cria.Services
             _storage = storage;
         }
 
+        public Ticket GetTicket(Guid ticketId)
+        {
+            return _storage.GetItem<Ticket>(GenerateFilenameFromTicketId(ticketId));
+        }
+
         public IEnumerable<Ticket> GetAllTickets()
         {
-            foreach (var ticket in _storage.GetAllItems<Ticket>())
+            foreach (var ticket in _storage.GetAllItems<Ticket>("ticket"))
             {
                 yield return ticket;
             }
@@ -48,7 +52,7 @@ namespace Cria.Services
 
         private string GenerateFilenameFromTicketId(Guid ticketId)
         {
-            return $"ticket-{ticketId}.json";
+            return $"ticket_{ticketId}.json";
         }
     }
 
@@ -57,5 +61,6 @@ namespace Cria.Services
         Guid CreateTicketForRequest(DrawEntryRequest request);
         void DeleteTicket(Guid entryId);
         IEnumerable<Ticket> GetAllTickets();
+        Ticket GetTicket(Guid ticketId);
     }
 }

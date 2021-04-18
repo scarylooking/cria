@@ -1,4 +1,4 @@
-﻿namespace Cria.Controllers.Models
+﻿namespace Cria.Models
 {
     public class DrawEntryRequest
     {

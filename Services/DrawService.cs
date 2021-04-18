@@ -22,11 +22,24 @@ namespace Cria.Services
             _ticketService = ticketService;
         }
 
-        public IReadOnlyCollection<Guid> DoDraw()
+        public DrawResult DoDraw(int maxWinners)
         {
             var validEntries = GetValidEntries();
 
-            return DrawWinningTickets(validEntries);
+            var winningTicketIds = DrawWinningTickets(validEntries, maxWinners);
+
+            var winningTickets = winningTicketIds.Select(winningTicketId => _ticketService.GetTicket(winningTicketId)).ToList();
+
+            var result = new DrawResult(winningTickets);
+
+            StoreResult(result);
+
+            return result;
+        }
+
+        private void StoreResult(DrawResult result)
+        {
+            _storageService.StoreItem(GenerateFilenameFromDrawResultId(result.DrawId), result);
         }
 
         private IReadOnlyCollection<Guid> GetValidEntries()
@@ -52,23 +65,27 @@ namespace Cria.Services
         {
             var random = new Random();
 
-            var winningEntryIds = new List<Guid>(entryIds);
+            var winners = new List<Guid>(entryIds);
 
-            for (var i = Math.Min(winningEntryIds.Count, max) - 1; i > 0; i--)
+            for (var i = winners.Count - 1; i > 0; i--)
             {
                 var randomIndex = random.Next(0, i + 1);
-                var temp = winningEntryIds[i];
-                winningEntryIds[i] = winningEntryIds[randomIndex];
-                winningEntryIds[randomIndex] = temp;
+                var temp = winners[i];
+                winners[i] = winners[randomIndex];
+                winners[randomIndex] = temp;
             }
 
-            return winningEntryIds;
+            return winners.Take(Math.Min(winners.Count, max)).ToArray();
         }
 
+        private string GenerateFilenameFromDrawResultId(Guid drawResultId)
+        {
+            return $"draw-result_{drawResultId}.json";
+        }
     }
 
     public interface IDrawService
     {
-        IReadOnlyCollection<Guid> DoDraw();
+        DrawResult DoDraw(int maxWinners);
     }
 }

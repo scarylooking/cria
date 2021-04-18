@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -20,13 +21,21 @@ namespace Cria.Services
             _logger = logger;
         }
 
-        public IEnumerable<T> GetAllItems<T>()
+        public IEnumerable<T> GetAllItems<T>(string itemType)
         {
-            return Storage.Keys.Select(GetItem<T>).ToList();
+            return Storage.Keys
+                .Where(key => key.StartsWith($"{itemType}_", StringComparison.CurrentCultureIgnoreCase))
+                .Select(GetItem<T>).ToList();
         }
 
         public T GetItem<T>(string filename)
         {
+            if (!Storage.ContainsKey(filename))
+            {
+                _logger.LogWarning($"a request was made for ${filename} from storage but no item with that name exists");
+                return default;
+            }
+
             var itemString = Storage[filename];
             return JsonSerializer.Deserialize<T>(itemString);
         }
@@ -48,6 +57,6 @@ namespace Cria.Services
         void StoreItem<T>(string filename, T item);
         T GetItem<T>(string filename);
         void RemoveItem(string filename);
-        IEnumerable<T> GetAllItems<T>();
+        IEnumerable<T> GetAllItems<T>(string itemType);
     }
 }

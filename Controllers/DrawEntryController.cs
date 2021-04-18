@@ -6,7 +6,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Cria.Controllers.Models;
 using Cria.Models;
 using Cria.Services;
 using Microsoft.AspNetCore.Http;

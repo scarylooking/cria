@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Cria.Controllers.Models
+namespace Cria.Models
 {
     public class DrawEntryResponse
     {
