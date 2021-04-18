@@ -8,11 +8,13 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Cria.Models;
 using Cria.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 
 namespace Cria.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/ticket")]
     public class TicketController : ControllerBase
     {
