@@ -3,7 +3,7 @@ import DrawEntryForm from "./DrawEntryForm";
 import DrawEntrySuccess from "./DrawEntrySuccess";
 import DrawEntryFailure from "./DrawEntryFailure";
 
-const DrawEntry2 = () => {
+const DrawEntry = () => {
   const [isError, setIsError] = useState(false);
   const [ticketId, setTicketId] = useState(null);
 
@@ -16,4 +16,4 @@ const DrawEntry2 = () => {
   );
 }
 
-export default DrawEntry2;
+export default DrawEntry;

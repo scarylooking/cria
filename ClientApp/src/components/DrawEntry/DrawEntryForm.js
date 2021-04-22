@@ -28,7 +28,7 @@ const stringValueReducer = (state, action) => {
   return { value: '', isValid: false, wasTouched: true }
 }
 
-const DrawEntryForm2 = (props) => {
+const DrawEntryForm = (props) => {
   const [formIsValid, setFormIsValid] = useState(false);
   const [emailState, dispatchEmail] = useReducer(emailReducer, { value: '', isValid: false, wasTouched: false });
   const [nameState, dispatchName] = useReducer(stringValueReducer, { value: '', isValid: false, wasTouched: false });
@@ -81,7 +81,6 @@ const DrawEntryForm2 = (props) => {
       props.ticketHandler(data.ticketId)
     });
   }
-
 
   useEffect(() => {
     const debounceTimer = setTimeout(() => {
@@ -151,4 +150,4 @@ const DrawEntryForm2 = (props) => {
   );
 }
 
-export default DrawEntryForm2;
+export default DrawEntryForm;
