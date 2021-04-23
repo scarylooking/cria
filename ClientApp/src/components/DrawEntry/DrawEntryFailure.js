@@ -1,6 +1,5 @@
 import React from 'react';
 import { XCircle } from 'react-bootstrap-icons';
-import styles from './DrawEntryFailure.module.css';
 
 const DrawEntryFailure = (props) => {
 

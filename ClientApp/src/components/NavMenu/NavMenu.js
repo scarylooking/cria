@@ -1,11 +1,12 @@
 import React, { Component, useState } from 'react';
 import { Collapse, Container, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink } from 'reactstrap';
 import { Link } from 'react-router-dom';
+import AuthenticationLink from '../AuthenticationLink/AuthenticationLink';
+import { useAuth0 } from "@auth0/auth0-react";
 import './NavMenu.css';
 
 const NavMenu = (props) => {
-  const displayName = NavMenu.name;
-
+  const { isAuthenticated } = useAuth0();
   const [navBarIsCollapsed, setNavBarCollapsed] = useState(true);
 
   const toggleNavbar = () => {
@@ -23,12 +24,13 @@ const NavMenu = (props) => {
               <NavItem>
                 <NavLink tag={Link} className="text-dark" to="/">Home</NavLink>
               </NavItem>
-              <NavItem>
+              {isAuthenticated && <NavItem>
                 <NavLink tag={Link} className="text-dark" to="/entries">Entries</NavLink>
-              </NavItem>
+              </NavItem>}
               <NavItem>
                 <NavLink tag={Link} className="text-dark" to="/draw">Enter draw</NavLink>
               </NavItem>
+              <AuthenticationLink/>
             </ul>
           </Collapse>
         </Container>
