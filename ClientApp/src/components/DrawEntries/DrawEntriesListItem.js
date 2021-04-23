@@ -1,11 +1,12 @@
 import React from "react";
 
 function DrawEntriesListItem(props) {
-
   return (
-    <>    
-      <p>{props.ticket.key}: {props.ticket.name} - {props.ticket.prize}</p>
-    </>
+    <tr>
+      <th scope="row">{props.ticket.key}</th>
+      <td>{props.ticket.name}</td>
+      <td>{props.ticket.prize}</td>
+    </tr>
   );
 }
 
