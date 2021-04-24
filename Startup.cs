@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
 using System.Security.Claims;
 using Cria.Services;
 using Cria.Utilities.Auth;
@@ -7,11 +10,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 
 namespace Cria
 {
@@ -30,16 +35,20 @@ namespace Cria
             var domain = $"https://{Configuration["Auth0:Domain"]}/";
 
             services
-                .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddAuthentication(options =>
+                {
+                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                })
                 .AddJwtBearer(options =>
                 {
                     options.Authority = domain;
                     options.Audience = Configuration["Auth0:Audience"];
                     // If the access token does not have a `sub` claim, `User.Identity.Name` will be `null`. Map it to a different claim by setting the NameClaimType below.
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        NameClaimType = ClaimTypes.NameIdentifier
-                    };
+                    //options.TokenValidationParameters = new TokenValidationParameters
+                    //{
+                    //    NameClaimType = ClaimTypes.NameIdentifier
+                    //};
                 });
 
             //services.AddAuthorization(options =>
@@ -47,7 +56,55 @@ namespace Cria
             //    options.AddPolicy("read:messages", policy => policy.Requirements.Add(new HasScopeRequirement("read:messages", domain)));
             //});
 
-            services.AddControllersWithViews();
+            services.AddControllers(options =>
+            {
+                var policy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+
+                options.Filters.Add(new AuthorizeFilter(policy));
+            });
+
+            // https://docs.microsoft.com/en-us/aspnet/core/tutorials/getting-started-with-swashbuckle?view=aspnetcore-5.0&tabs=visual-studio
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Version = "v1",
+                    Title = "Dot Net North Service API",
+                    Contact = new OpenApiContact
+                    {
+                        Name = "Oli Newsham",
+                        Email = string.Empty,
+                        Url = new Uri("https://twitter.com/scaryLooking"),
+                    }
+                });
+                
+                //https://dotnetcoretutorials.com/2021/02/14/using-auth0-with-an-asp-net-core-api-part-3-swagger/
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.OAuth2,
+                    Flows = new OpenApiOAuthFlows
+                    {
+                        Implicit = new OpenApiOAuthFlow
+                        {
+                            Scopes = new Dictionary<string, string>
+                            {
+                                { "openid", "Open Id" }
+                            },
+                            AuthorizationUrl = new Uri($"https://{Configuration["Auth0:Domain"]}/authorize?audience={Configuration["Auth0:Audience"]}")
+                        }
+                    }
+                });
+
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                c.IncludeXmlComments(xmlPath);
+
+                c.OperationFilter<SecurityRequirementsOperationFilter>();
+            });
 
             services.AddSingleton<IAuthorizationHandler, HasScopeHandler>();
             services.AddScoped<IDrawService, DrawService>();
@@ -64,6 +121,14 @@ namespace Cria
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseSwagger();
+
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+                c.OAuthClientId(Configuration["Auth0:ClientId"]);
+            });
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -83,7 +148,7 @@ namespace Cria
 
             app.UseAuthentication();
             app.UseAuthorization();
-
+            
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(

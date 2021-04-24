@@ -8,14 +8,17 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Cria.Models;
 using Cria.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 
 namespace Cria.Controllers
 {
     [ApiController]
-    [Route("api/drawEntry")]
+    
     public class DrawEntryController : ControllerBase
     {
+        private const string RouteBase = "api/drawEntry";
+
         private readonly ILogger<DrawEntryController> _logger;
         private readonly ITicketService _ticketService;
 
@@ -26,6 +29,8 @@ namespace Cria.Controllers
         }
 
         [HttpPost]
+        [AllowAnonymous]
+        [Route(RouteBase)]
         public IActionResult CreateEntry([FromBody] DrawEntryRequest request)
         {
             var ticketId =_ticketService.CreateTicketForRequest(request);

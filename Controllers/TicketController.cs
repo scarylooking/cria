@@ -14,8 +14,8 @@ using Microsoft.AspNetCore.Http;
 namespace Cria.Controllers
 {
     [ApiController]
-    [Authorize]
     [Route("api/ticket")]
+    
     public class TicketController : ControllerBase
     {
         private readonly ILogger<TicketController> _logger;
@@ -27,8 +27,8 @@ namespace Cria.Controllers
             _ticketService = ticketService;
         }
 
-        [HttpGet]
-        public IActionResult GetTicket([FromQuery] Guid ticketId)
+        [HttpGet("{ticketId}")]
+        public IActionResult GetTicket(Guid ticketId)
         {
 
             var ticket = _ticketService.GetTicket(ticketId);
@@ -44,8 +44,7 @@ namespace Cria.Controllers
             return new JsonResult(ticket);
         }
 
-        [HttpGet]
-        [Route("all")]
+        [HttpGet("all")]
         public IActionResult GetAllTickets()
         {
             var tickets = _ticketService.GetAllTickets();

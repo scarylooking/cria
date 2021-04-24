@@ -10,14 +10,15 @@ using Cria.Models;
 using Cria.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 
 namespace Cria.Controllers
 {
     [ApiController]
-    [Authorize]
-    [Route("api/draw")]
     public class DrawController : ControllerBase
     {
+        private const string RouteBase = "api/draw";
+
         private readonly ILogger<DrawController> _logger;
         private readonly IDrawService _drawService;
 
@@ -28,6 +29,7 @@ namespace Cria.Controllers
         }
 
         [HttpPost]
+        [Route(RouteBase)]
         public IActionResult DoDraw([FromBody] DrawRequest request)
         {
             var drawResult = _drawService.DoDraw(request.MaxWinners);
@@ -39,6 +41,38 @@ namespace Cria.Controllers
             Response.StatusCode = StatusCodes.Status200OK;
 
             return new JsonResult(responseBody);
+        }
+
+        [HttpGet]
+        [Route(RouteBase + "/{drawId}")]
+        public IActionResult GetDrawById(string id)
+        {
+            if (!Guid.TryParse(id, out var drawId))
+            {
+                Response.StatusCode = StatusCodes.Status400BadRequest;
+                return new EmptyResult();
+            }
+
+            var drawResult = _drawService.GetDrawById(drawId);
+
+            if (drawResult == default)
+            {
+                Response.StatusCode = StatusCodes.Status404NotFound;
+                return new EmptyResult();
+            }
+
+            Response.StatusCode = StatusCodes.Status200OK;
+            return new JsonResult(drawResult);
+        }
+
+        [HttpGet]
+        [Route(RouteBase)]
+        public IActionResult GetAllDrawIds()
+        {
+            var allDrawIds = _drawService.GetAllDrawIds();
+
+            Response.StatusCode = StatusCodes.Status200OK;
+            return new JsonResult(allDrawIds);
         }
     }
 

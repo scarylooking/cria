@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Security.Policy;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Cria.Models;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
@@ -15,11 +17,15 @@ namespace Cria.Services
         private readonly IStorageService _storageService;
         private readonly ITicketService _ticketService;
 
+        private readonly Regex _drawIdRegex;
+
         public DrawService(ILogger<TicketService> logger, IStorageService storageService, ITicketService ticketService)
         {
             _logger = logger;
             _storageService = storageService;
             _ticketService = ticketService;
+
+            _drawIdRegex = new Regex(@"draw-result_([a-f,0-9,-]*)\.json");
         }
 
         public DrawResult DoDraw(int maxWinners)
@@ -35,6 +41,32 @@ namespace Cria.Services
             StoreResult(result);
 
             return result;
+        }
+
+        public DrawResult GetDrawById(Guid drawId)
+        {
+            return _storageService.GetItem<DrawResult>(GenerateFilenameFromDrawResultId(drawId));
+        }
+
+        public IEnumerable<Guid> GetAllDrawIds()
+        {
+            var allDraws = _storageService.GetAllItemNamesForType("draw-result");
+
+            var drawIds = new List<Guid>();
+
+            foreach (var draw in allDraws)
+            {
+                var match = _drawIdRegex.Match(draw);
+
+                if (match.Success)
+                {
+                    var drawId = Guid.Parse(match.Groups[1].Value);
+
+                    drawIds.Add(drawId);
+                }
+            }
+
+            return drawIds;
         }
 
         private void StoreResult(DrawResult result)
@@ -87,5 +119,9 @@ namespace Cria.Services
     public interface IDrawService
     {
         DrawResult DoDraw(int maxWinners);
+
+        DrawResult GetDrawById(Guid drawId);
+
+        IEnumerable<Guid> GetAllDrawIds();
     }
 }

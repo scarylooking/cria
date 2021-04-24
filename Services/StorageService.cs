@@ -28,6 +28,13 @@ namespace Cria.Services
                 .Select(GetItem<T>).ToList();
         }
 
+        public IEnumerable<string> GetAllItemNamesForType(string itemType)
+        {
+            return Storage.Keys
+                .Where(key => key.StartsWith($"{itemType}_", StringComparison.CurrentCultureIgnoreCase))
+                .ToList();
+        }
+
         public T GetItem<T>(string filename)
         {
             if (!Storage.ContainsKey(filename))
@@ -58,5 +65,6 @@ namespace Cria.Services
         T GetItem<T>(string filename);
         void RemoveItem(string filename);
         IEnumerable<T> GetAllItems<T>(string itemType);
+        IEnumerable<string> GetAllItemNamesForType(string itemType);
     }
 }
