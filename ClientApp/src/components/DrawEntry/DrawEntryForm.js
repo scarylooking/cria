@@ -3,8 +3,6 @@ import React, { useEffect, useReducer, useState } from 'react';
 const isEmailValid = (address) => /^\S+@\S+\.\S+$/.test(address);
 
 const emailReducer = (state, action) => {
-
-
   if (action.type === 'USER_INPUT') {
     return { value: action.value, isValid: isEmailValid(action.value), wasTouched: true };
   }
@@ -62,23 +60,37 @@ const DrawEntryForm = (props) => {
     dispatchName({ type: 'INPUT_BLUR' })
   }
 
-  const submitHandler = (event) => {
+  const submitHandlerAsync = async (event) => {
     event.preventDefault();
+    props.errorHandler(null);
+    props.ticketHandler(null);
 
-    fetch('/api/drawEntry', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        name: nameState.value,
-        email: emailState.value,
-        prize: prizeState.value
-      })
-    }).then(response => {
-      return response.json();
-    }).then(data => {
-      props.ticketHandler(data.ticketId)
+    window.grecaptcha.ready(async () => {
+
+      const token = await window.grecaptcha.execute('6LeZXrkaAAAAADf4iUj3fqrtk7RjC_DEwuLvSJeY', { action: 'submit' });
+
+      const payload = {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: nameState.value,
+          email: emailState.value,
+          prize: prizeState.value,
+          reCaptchaToken: token
+        })
+      }
+
+      const response = await fetch('/api/drawEntry', payload);
+
+      if (response.status == 201) {
+        const jsonResponse = await response.json();
+        props.ticketHandler(jsonResponse.ticketId);
+      }
+      else {
+        props.errorHandler(true);
+      }
     });
   }
 
@@ -97,7 +109,7 @@ const DrawEntryForm = (props) => {
   return (
     <div className="row">
       <div className="col-lg-12">
-        <form onSubmit={submitHandler} noValidate>
+        <form onSubmit={submitHandlerAsync} noValidate>
           <div className='form-group'>
             <label htmlFor="name">Name</label>
             <input
@@ -134,7 +146,7 @@ const DrawEntryForm = (props) => {
               className={`custom-select ${prizeState.wasTouched ? prizeState.isValid === false ? 'is-invalid' : 'is-valid' : ''}`}
               onChange={prizeChangeHandler}
               onBlur={prizeBlurHandler}
-              >
+            >
               <option value="">Pick a prize...</option>
               <option value="any">Any</option>
               <option value="jetbrains">Jetbrains</option>

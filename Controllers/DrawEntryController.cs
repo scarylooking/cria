@@ -1,10 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Cria.Models;
 using Cria.Services;
@@ -21,19 +16,26 @@ namespace Cria.Controllers
 
         private readonly ILogger<DrawEntryController> _logger;
         private readonly ITicketService _ticketService;
+        private readonly ICaptchaService _captchaService;
 
-        public DrawEntryController(ILogger<DrawEntryController> logger, ITicketService ticketService)
+        public DrawEntryController(ILogger<DrawEntryController> logger, ITicketService ticketService, ICaptchaService captchaService)
         {
             _logger = logger;
             _ticketService = ticketService;
+            _captchaService = captchaService;
         }
 
         [HttpPost]
         [AllowAnonymous]
         [Route(RouteBase)]
-        public IActionResult CreateEntry([FromBody] DrawEntryRequest request)
+        public async Task <IActionResult> CreateEntry([FromBody] DrawEntryRequest request)
         {
             var ticketId =_ticketService.CreateTicketForRequest(request);
+
+            if (!await _captchaService.IsValid(request.ReCaptchaToken))
+            {
+                return BadRequest();
+            }
 
             var responseBody = new DrawEntryResponse(ticketId);
 

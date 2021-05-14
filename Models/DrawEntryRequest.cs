@@ -5,6 +5,7 @@
         public string Name { get; set; }
         public string Email { get; set; }
         public string Prize { get; set; }
+        public string ReCaptchaToken { get; set; }
 
         public DrawEntryRequest(){}
     }

@@ -2,20 +2,18 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using System.Security.Claims;
+using Cria.Models.Config;
 using Cria.Services;
 using Cria.Utilities.Auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
 namespace Cria
@@ -29,7 +27,6 @@ namespace Cria
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             var domain = $"https://{Configuration["Auth0:Domain"]}/";
@@ -106,7 +103,11 @@ namespace Cria
                 c.OperationFilter<SecurityRequirementsOperationFilter>();
             });
 
+            services.AddOptions<GoogleReCaptchaConfig>().BindConfiguration("googleReCaptcha");
+            
             services.AddSingleton<IAuthorizationHandler, HasScopeHandler>();
+            services.AddSingleton<ICaptchaService, CaptchaService>();
+            
             services.AddScoped<IDrawService, DrawService>();
             services.AddScoped<ITicketService, TicketService>();
             services.AddScoped<IStorageService, StorageService>();
@@ -118,7 +119,6 @@ namespace Cria
             });
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseSwagger();
