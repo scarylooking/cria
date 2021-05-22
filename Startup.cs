@@ -106,11 +106,12 @@ namespace Cria
             services.AddOptions<GoogleReCaptchaConfig>().BindConfiguration("googleReCaptcha");
             
             services.AddSingleton<IAuthorizationHandler, HasScopeHandler>();
-            services.AddSingleton<ICaptchaService, CaptchaService>();
-            
+
             services.AddScoped<IDrawService, DrawService>();
             services.AddScoped<ITicketService, TicketService>();
             services.AddScoped<IStorageService, StorageService>();
+
+            services.AddHttpClient<ICaptchaService, CaptchaService>();
 
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration =>

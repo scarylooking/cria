@@ -34,7 +34,7 @@ namespace Cria.Controllers
 
             if (!await _captchaService.IsValid(request.ReCaptchaToken))
             {
-                return BadRequest();
+                return BadRequest("");
             }
 
             var responseBody = new DrawEntryResponse(ticketId);

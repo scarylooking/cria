@@ -67,7 +67,7 @@ const DrawEntryForm = (props) => {
 
     window.grecaptcha.ready(async () => {
 
-      const token = await window.grecaptcha.execute('6LeZXrkaAAAAADf4iUj3fqrtk7RjC_DEwuLvSJeY', { action: 'submit' });
+      const token = await window.grecaptcha.execute('6LeegeEaAAAAANl1S0DTNQznlDEiqMYZAYLhQr5g', { action: 'submit' });
 
       const payload = {
         method: 'POST',
